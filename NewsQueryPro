@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>News Query Pro</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #ADD8E6;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            width: 80%;
+            max-width: 500px;
+            text-align: center;
+        }
+        label {
+            display: block;
+            margin: 10px 0 5px;
+        }
+        input, button {
+            width: 90%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+        button {
+            background-color: green;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: darkgreen;
+        }
+        .dropdown {
+            display: none;
+            position: absolute;
+            background-color: white;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            z-index: 1;
+            width: 90%;
+            max-width: 500px;
+            text-align: left;
+        }
+        .dropdown-item {
+            padding: 10px;
+            cursor: pointer;
+        }
+        .dropdown-item:hover {
+            background-color: #f0f0f0;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>News Query Pro</h1>
+    
+    <button onclick="showQueries()">Select Query</button>
+    <span>OR</span>
+    <label for="topic">Enter Topic (optional):</label>
+    <input type="text" id="topic" placeholder="Enter topic">
+
+    <div id="queryDropdown" class="dropdown">
+        <div class="dropdown-item" onclick="prefillQueries('Fintech')">Fintech</div>
+        <div class="dropdown-item" onclick="prefillQueries('Information Technology')">Information Technology</div>
+        <div class="dropdown-item" onclick="prefillQueries('Data Analytics')">Data Analytics</div>
+        <div class="dropdown-item" onclick="prefillQueries('Artificial Intelligence')">Artificial Intelligence</div>
+        <div class="dropdown-item" onclick="prefillQueries('Regulatory Updates')">Regulatory Updates</div>
+        <div class="dropdown-item" onclick="prefillQueries('Company ESG')">Company ESG</div>
+    </div>
+
+    <label for="keywords">Enter Keywords (comma-separated):</label>
+    <input type="text" id="keywords" placeholder="Enter keywords">
+
+    <label for="exclude">Keywords to Exclude (comma-separated):</label>
+    <input type="text" id="exclude" placeholder="Enter keywords to exclude">
+
+    <label for="start-date">Select Start Date:</label>
+    <input type="date" id="start-date">
+
+    <label for="end-date">Select End Date:</label>
+    <input type="date" id="end-date">
+
+    <button onclick="searchGoogle()">Search</button>
+</div>
+
+<script>
+    function searchGoogle() {
+        const topic = document.getElementById('topic').value.trim();
+        const keywords = formatKeywords(document.getElementById('keywords').value.trim());
+        const excludeKeywords = formatExcludeKeywords(document.getElementById('exclude').value.trim());
+        const startDate = new Date(document.getElementById('start-date').value).toLocaleDateString('en-US');
+        const endDate = new Date(document.getElementById('end-date').value).toLocaleDateString('en-US');
+
+        let formattedQuery = '';
+        if (topic && keywords) {
+            formattedQuery = `"${topic}" AND (${keywords}) ${excludeKeywords}`;
+        } else if (topic) {
+            formattedQuery = `"${topic}" ${excludeKeywords}`;
+        } else if (keywords) {
+            formattedQuery = `${keywords} ${excludeKeywords}`;
+        } else {
+            formattedQuery = excludeKeywords;
+        }
+
+        const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(formattedQuery)}&num=100&tbs=sbd:1,cdr:1,cd_min:${startDate},cd_max:${endDate}&tbm=nws`;
+        window.open(searchUrl, '_blank');
+    }
+
+    function formatKeywords(input) {
+        const keywordsList = input.split(',').map(kw => kw.trim()).filter(Boolean);
+        return keywordsList.map(kw => {
+            if (kw.includes(' ') && !kw.startsWith('"') && !kw.endsWith('"')) {
+                return `"${kw}"`;
+            }
+            return kw;
+        }).join(' OR ');
+    }
+
+    function formatExcludeKeywords(input) {
+        const excludeList = input.split(',').map(kw => kw.trim()).filter(Boolean);
+        return excludeList.map(kw => {
+            if (kw.includes(' ') && !kw.startsWith('"') && !kw.endsWith('"')) {
+                return `-"${kw}"`;
+            }
+            return `-${kw}`;
+        }).join(' ');
+    }
+
+    function showQueries() {
+        const dropdown = document.getElementById('queryDropdown');
+        dropdown.style.display = dropdown.style.display === 'none' || dropdown.style.display === '' ? 'block' : 'none';
+    }
+
+    function prefillQueries(queryName) {
+        const queries = {
+            'Fintech': {
+                topic: 'Fintech',
+                keywords: 'Financial Technology, innovation, startup, digital banking, blockchain, cryptocurrency, Insurtech, RegTech, GreenTech',
+                exclude: 'top ten, top 10, must have, 10 best, what is, why is'
+            },
+            'Information Technology': {
+                topic: 'IT',
+                keywords: 'IT Services, ITES, Semiconductor, BPO, KPO, IOT, Virtual Reality, cloud, digital transformation, automation, cybersecurity, SaaS',
+                exclude: 'top ten, top 10, must have, 10 best, what is, why is'
+            },
+            'Data Analytics': {
+                topic: 'Data Analytics',
+                keywords: 'Big Data, Business Intelligence, Predictive Analytics, Data Science, Data centers, finance, banking, healthcare, retail, manufacturing, machine learning',
+                exclude: 'top ten, top 10, must have, 10 best, what is, why is'
+            },
+            'Artificial Intelligence': {
+                topic: 'AI',
+                keywords: 'Artificial Intelligence, Machine Learning, ML, Deep Learning, Cloud computing, Quantum computing',
+                exclude: 'top ten, top 10, must have, 10 best, what is, why is'
+            },
+            'Regulatory Updates': {
+                topic: 'Regulatory',
+                keywords: 'monetary, fiscal, Law, tax, SEBI, RBI, CBIC, MCA, Finance Minister, policy, update, reform, economy',
+                exclude: 'top ten, top 10, must have, 10 best, what is, why is'
+            },
+            'Company ESG': {
+                topic: 'Tata Chemicals',
+                keywords: 'carbon, emission, climate, environment, pollution, waste, sustainable, grievance, complaint, fraud, employee, diversity, csr, gender, law, worker, training, misconduct, acquisition, expansion, appoint, resign, merger, governance',
+                exclude: 'stock, results, jobs'
+            }
+        };
+
+        if (queries[queryName]) {
+            const { topic, keywords, exclude } = queries[queryName];
+            document.getElementById('topic').value = topic;
+            document.getElementById('keywords').value = keywords;
+            document.getElementById('exclude').value = exclude;
+        }
+
+        showQueries(); // Hide dropdown after selection
+    }
+</script>
+
+</body>
+</html>
